@@ -1,0 +1,53 @@
+# Install PostgreSQL on PostgreSQL-host
+- name: Update HiveMQ Configuration
+  hosts: cluster
+  become: true
+  vars:
+    tls_enabled: true
+    bridge_enabled: true
+  tasks:
+    - name: Stop HiveMQ Service
+      become: true
+      ansible.builtin.shell: /etc/init.d/hivemq stop
+
+    - name: Copy Keystore 
+      copy:
+        src: ../configs/keystore.jks
+        dest: /opt/hivemq/conf/keystore.jks
+      when: tls_enabled
+
+    - name: Copy Broker Configuration 
+      copy:
+        src: ../configs/broker.xml
+        dest: /opt/hivemq/conf/config.xml
+      when: not tls_enabled
+
+    - name: Copy TLS Broker Configuration 
+      copy:
+        src: ../configs/broker-tls.xml
+        dest: /opt/hivemq/conf/config.xml
+      when: tls_enabled
+
+    - name: Copy Security Extension Configuration 
+      copy:
+        src: ../configs/security-extension.xml
+        dest: /opt/hivemq/extensions/hivemq-enterprise-security-extension/conf/config.xml
+    
+    - name: Copy Bridge Extension Configuration 
+      copy:
+        src: ../configs/bridge.xml
+        dest: /opt/hivemq/extensions/hivemq-bridge-extension/conf/config.xml
+      when: bridge_enabled
+
+    - name: Remove Bridge extension Disable file if exist
+      become: true
+      ansible.builtin.shell: rm -f /opt/hivemq/extensions/hivemq-bridge-extension/DISABLED
+      when: bridge_enabled
+    
+    - name: Start HiveMQ Service
+      become: true
+      ansible.builtin.shell: /etc/init.d/hivemq start
+    
+    - name: Check HiveMQ Service Status
+      become: true
+      ansible.builtin.shell: /etc/init.d/hivemq status

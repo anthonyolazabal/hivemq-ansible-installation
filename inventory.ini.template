@@ -1,0 +1,7 @@
+[cluster]
+hive001 ansible_host=192.168.69.138 ansible_connection=ssh ansible_user=adminaol ansible_become_pass=adminaol
+hive002 ansible_host=192.168.69.137 ansible_connection=ssh ansible_user=adminaol ansible_become_pass=adminaol
+hive003 ansible_host=192.168.69.135 ansible_connection=ssh ansible_user=adminaol ansible_become_pass=adminaol
+
+[database]
+database001 ansible_host=192.168.69.136 ansible_connection=ssh ansible_user=adminaol ansible_become_pass=adminaol

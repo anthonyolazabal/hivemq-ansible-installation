@@ -1,0 +1,84 @@
+# Install PostgreSQL on PostgreSQL-host
+- name: Install HiveMQ with MQTT TLS listeners
+  hosts: cluster
+  become: true
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install Java SDK (openjdk-21-jdk)
+      apt:
+        name: openjdk-21-jdk
+        state: present
+
+    - name: Install Unzip
+      apt:
+        name: unzip
+        state: present
+    
+    - name: Download HiveMQ Sources
+      become: true
+      ansible.builtin.shell: wget -nc https://releases.hivemq.com/hivemq-4.29.0.zip -P /tmp
+
+    - name: Unzip HiveMQ Sources
+      become: true
+      ansible.builtin.shell: unzip /tmp/hivemq-4.29.0.zip -d /opt
+
+    - name: Create Symlinks
+      become: true
+      ansible.builtin.shell: ln -sf /opt/hivemq-4.29.0 /opt/hivemq
+
+    - name: Copy Keystore 
+      copy:
+        src: ./configs/keystore.jks
+        dest: /opt/hivemq/conf/keystore.jks
+
+    - name: Copy Broker Configuration 
+      copy:
+        src: ./configs/broker-tls.xml
+        dest: /opt/hivemq/conf/config.xml
+
+    - name: Copy Security Extension Configuration 
+      copy:
+        src: ./configs/security-extension.xml
+        dest: /opt/hivemq/extensions/hivemq-enterprise-security-extension/conf/config.xml
+
+    - name: Create HiveMQ User
+      become: true
+      ansible.builtin.shell: useradd -d /opt/hivemq hivemq
+
+    - name: Update permissions 1/2
+      become: true
+      ansible.builtin.shell: chown -R hivemq:hivemq /opt/hivemq-4.29.0
+    
+    - name: Update permissions 2/2
+      become: true
+      ansible.builtin.shell: chown -R hivemq:hivemq /opt/hivemq
+    
+    - name: Copy service
+      become: true
+      ansible.builtin.shell: cp /opt/hivemq/bin/init-script/hivemq-debian /etc/init.d/hivemq
+
+    - name: Add execution permission on service
+      become: true
+      ansible.builtin.shell: chmod +x /etc/init.d/hivemq
+
+    - name: Set HiveMQ service on Startup
+      become: true
+      ansible.builtin.shell: update-rc.d hivemq defaults
+
+    - name: Set HiveMQ service on Startup
+      become: true
+      ansible.builtin.shell: systemctl enable hivemq
+    
+    - name: Start HiveMQ Service
+      become: true
+      ansible.builtin.shell: /etc/init.d/hivemq start
+    
+    - name: Check HiveMQ Service Status
+      become: true
+      ansible.builtin.shell: /etc/init.d/hivemq status
+
+
+    

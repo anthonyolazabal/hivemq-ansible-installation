@@ -1,0 +1,57 @@
+# Install PostgreSQL on PostgreSQL-host
+- name: Install PostgreSQL
+  hosts: database
+  become: true
+  tasks:
+    - name: Add pgdg repo to sources.list.d
+      lineinfile:
+        path: /etc/apt/sources.list.d/pgdg.list
+        line: "deb http://apt.postgresql.org/pub/repos/apt {{ ansible_distribution_release }}-pgdg main"
+        create: true
+
+    - name: Download PostgreSQL key and add it to system keyring
+      apt_key:
+        url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+        state: present
+
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install PostgreSQL
+      apt:
+        name: postgresql
+        state: present
+    
+    - name: Set postgresql listen addresses
+      block:
+      - name: Set postgresql working directory
+        set_fact:
+          postgresql_config_dir: "/etc/postgresql/16/main/"
+
+      - name: Configure postgresql listen addresses
+        lineinfile:
+          dest: "{{ postgresql_config_dir }}postgresql.conf"
+          regexp: "^#?listen_addresses.+$"
+          line: "listen_addresses = '*'"
+          state: present
+          mode: 0600
+      
+      - name: Configure remote access
+        lineinfile:
+          dest: "{{ postgresql_config_dir }}pg_hba.conf"
+          regexp: "^#?host    all             all             127.0.0.1/32            md5.+$"
+          line: "host    all             all             0.0.0.0/0            md5"
+          state: present
+          mode: 0600
+      
+      - name: restart postgresql service
+        systemd:
+          name: "postgresql"
+          state: restarted
+          enabled: yes
+      
+      - name: Copy SQL script 
+        copy:
+          src: ./configs/Full-ESE-Deployment.sql
+          dest: /tmp/Full-ESE-Deployment.sql
