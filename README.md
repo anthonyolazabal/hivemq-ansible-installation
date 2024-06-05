@@ -73,5 +73,5 @@ In case you want to use your own keystore.jks, just place it into the configs fo
 ## Update HiveMQ Configuration on all servers
 If you want to redeploy the configuration on all hosts and restart the service, you can update the files in the configs folder and run :
 ```
-ansible-playbook -i inventory.ini hivemq-update-configuration.yml
+ansible-playbook -i inventory.ini ./playbooks/hivemq-update-configuration.yml
 ```
