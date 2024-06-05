@@ -16,12 +16,12 @@ Install additional module
 ansible-galaxy collection install community.postgresql
 
 ## Configure passwordless authentication
-If you don't already have a SSH Key, you can generate a new one with 
+If you don't already have a SSH Key, you can generate a new one with (Assuming you are on Linux or MacOS)
+```
+ssh-keygen
 ```
 
-```
-
-Then deploy the key on remote hosts by using this command for each target system :
+Then deploy the key on remote hosts by using this command for each target system (Assuming you are on Linux or MacOS) :
 ```
 ssh-copy-id <username>@<IP_address_of_target-host>
 ```
